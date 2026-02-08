@@ -1,7 +1,9 @@
 const CACHE_NAME = 'mileage-tracker-v1';
 const urlsToCache = [
-  '/mileage-tracker.html',
-  '/manifest.json'
+  '/mileage-tracker/mileage-tracker.html',
+  '/mileage-tracker/manifest.json',
+  '/mileage-tracker/icon-192.png',
+  '/mileage-tracker/icon-512.png'
 ];
 
 self.addEventListener('install', event => {

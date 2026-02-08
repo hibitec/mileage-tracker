@@ -2,20 +2,20 @@
   "name": "Mileage Tracker",
   "short_name": "Mileage",
   "description": "Track your mileage and trips",
-  "start_url": "/mileage-tracker.html",
+  "start_url": "/mileage-tracker/mileage-tracker.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007AFF",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/mileage-tracker/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/mileage-tracker/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
