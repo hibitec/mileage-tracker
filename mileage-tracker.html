@@ -371,7 +371,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // Storage utilities
         const storage = {
@@ -643,6 +643,14 @@
 
         function AddMilesModal({ onClose, onAdd }) {
             const [miles, setMiles] = useState('');
+            const inputRef = React.useRef(null);
+
+            React.useEffect(() => {
+                // Focus the input field when modal opens
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }, []);
 
             const handleAdd = () => {
                 const milesNum = parseFloat(miles);
@@ -664,6 +672,7 @@
                             <div className="form-group">
                                 <label className="form-label">Add Personal Miles</label>
                                 <input 
+                                    ref={inputRef}
                                     type="number"
                                     placeholder="Miles"
                                     value={miles}
