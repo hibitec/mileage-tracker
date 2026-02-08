@@ -442,9 +442,11 @@
             };
 
             const addMiles = (miles) => {
-                const newBalance = availableMiles + miles;
-                setAvailableMiles(newBalance);
-                logActivity('Added Miles', miles, `Added ${miles.toFixed(1)} miles`, newBalance);
+                setAvailableMiles(prev => {
+                    const newBalance = prev + miles;
+                    logActivity('Added Miles', miles, `Added ${miles.toFixed(1)} miles`, newBalance);
+                    return newBalance;
+                });
             };
 
             const addTrip = (miles, description) => {
@@ -455,9 +457,11 @@
                     description
                 };
                 setTrips(prev => [trip, ...prev]);
-                const newBalance = availableMiles - miles;
-                setAvailableMiles(newBalance);
-                logActivity('Logged Trip', miles, description, newBalance);
+                setAvailableMiles(prev => {
+                    const newBalance = prev - miles;
+                    logActivity('Logged Trip', miles, description, newBalance);
+                    return newBalance;
+                });
             };
 
             const updateTrip = (tripId, newMiles, newDescription) => {
@@ -470,9 +474,11 @@
                         ? { ...t, miles: newMiles, description: newDescription }
                         : t
                 ));
-                const newBalance = availableMiles + oldMiles - newMiles;
-                setAvailableMiles(newBalance);
-                logActivity('Edited Trip', newMiles, `Updated: ${newDescription}`, newBalance);
+                setAvailableMiles(prev => {
+                    const newBalance = prev + oldMiles - newMiles;
+                    logActivity('Edited Trip', newMiles, `Updated: ${newDescription}`, newBalance);
+                    return newBalance;
+                });
             };
 
             const deleteTrip = (tripId) => {
@@ -480,16 +486,20 @@
                 if (!trip) return;
 
                 setTrips(prev => prev.filter(t => t.id !== tripId));
-                const newBalance = availableMiles + trip.miles;
-                setAvailableMiles(newBalance);
-                logActivity('Deleted Trip', trip.miles, trip.description, newBalance);
+                setAvailableMiles(prev => {
+                    const newBalance = prev + trip.miles;
+                    logActivity('Deleted Trip', trip.miles, trip.description, newBalance);
+                    return newBalance;
+                });
             };
 
             const resetBalance = () => {
-                const previousBalance = availableMiles;
-                setAvailableMiles(0);
-                setTrips([]);
-                logActivity('Reset Balance', previousBalance, `Reset balance from ${previousBalance.toFixed(1)} to 0.0`, 0);
+                setAvailableMiles(prev => {
+                    const previousBalance = prev;
+                    setTrips([]);
+                    logActivity('Reset Balance', previousBalance, `Reset balance from ${previousBalance.toFixed(1)} to 0.0`, 0);
+                    return 0;
+                });
                 setShowResetAlert(false);
             };
 
