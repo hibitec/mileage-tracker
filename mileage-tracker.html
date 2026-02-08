@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mileage Tracker">
+    <title>Mileage Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .app {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            color: #007AFF;
+        }
+
+        .balance-section {
+            background: #f9f9f9;
+            padding: 32px 16px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 64px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .balance-positive {
+            color: #34C759;
+        }
+
+        .balance-negative {
+            color: #FF3B30;
+        }
+
+        .owe-text {
+            font-size: 14px;
+            color: #FF3B30;
+            margin-top: 8px;
+        }
+
+        .quick-log {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .quick-log h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #FF3B30;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .trip-list {
+            padding: 0;
+        }
+
+        .trip-item {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            background: white;
+        }
+
+        .trip-item:active {
+            background: #f9f9f9;
+        }
+
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .trip-description {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .trip-miles {
+            font-size: 16px;
+            font-weight: 600;
+            color: #007AFF;
+        }
+
+        .trip-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .modal-footer {
+            padding: 16px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1001;
+        }
+
+        .menu.open {
+            right: 0;
+        }
+
+        .menu-header {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-item:active {
+            background: #f9f9f9;
+        }
+
+        .menu-item.danger {
+            color: #FF3B30;
+        }
+
+        .empty-state {
+            padding: 48px 16px;
+            text-align: center;
+            color: #999;
+        }
+
+        .alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .alert-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .alert-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .export-view {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .export-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .export-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .export-count {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .export-features {
+            text-align: left;
+            max-width: 300px;
+            margin: 0 auto 32px;
+        }
+
+        .export-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Storage utilities
+        const storage = {
+            get: (key) => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : null;
+                } catch {
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch (e) {
+                    console.error('Storage error:', e);
+                }
+            }
+        };
+
+        function App() {
+            const [availableMiles, setAvailableMiles] = useState(0);
+            const [trips, setTrips] = useState([]);
+            const [activityLog, setActivityLog] = useState([]);
+            const [quickMiles, setQuickMiles] = useState('');
+            const [quickDescription, setQuickDescription] = useState('');
+            const [showMenu, setShowMenu] = useState(false);
+            const [showAddMiles, setShowAddMiles] = useState(false);
+            const [showEditTrip, setShowEditTrip] = useState(false);
+            const [showResetAlert, setShowResetAlert] = useState(false);
+            const [showExport, setShowExport] = useState(false);
+            const [editingTrip, setEditingTrip] = useState(null);
+
+            // Load data on mount
+            useEffect(() => {
+                const miles = storage.get('availableMiles');
+                const storedTrips = storage.get('trips');
+                const storedLog = storage.get('activityLog');
+                
+                if (miles !== null) setAvailableMiles(miles);
+                if (storedTrips) setTrips(storedTrips);
+                if (storedLog) setActivityLog(storedLog);
+            }, []);
+
+            // Save data when it changes
+            useEffect(() => {
+                storage.set('availableMiles', availableMiles);
+            }, [availableMiles]);
+
+            useEffect(() => {
+                storage.set('trips', trips);
+            }, [trips]);
+
+            useEffect(() => {
+                storage.set('activityLog', activityLog);
+            }, [activityLog]);
+
+            const logActivity = (type, miles, description) => {
+                const entry = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    type,
+                    miles,
+                    description,
+                    balanceAfter: availableMiles
+                };
+                setActivityLog(prev => [entry, ...prev]);
+            };
+
+            const addMiles = (miles) => {
+                setAvailableMiles(prev => prev + miles);
+                logActivity('Added Miles', miles, `Added ${miles.toFixed(1)} miles`);
+            };
+
+            const addTrip = (miles, description) => {
+                const trip = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    miles,
+                    description
+                };
+                setTrips(prev => [trip, ...prev]);
+                setAvailableMiles(prev => prev - miles);
+                logActivity('Logged Trip', miles, description);
+            };
+
+            const updateTrip = (tripId, newMiles, newDescription) => {
+                const trip = trips.find(t => t.id === tripId);
+                if (!trip) return;
+
+                const oldMiles = trip.miles;
+                setTrips(prev => prev.map(t => 
+                    t.id === tripId 
+                        ? { ...t, miles: newMiles, description: newDescription }
+                        : t
+                ));
+                setAvailableMiles(prev => prev + oldMiles - newMiles);
+                logActivity('Edited Trip', newMiles, `Updated: ${newDescription}`);
+            };
+
+            const deleteTrip = (tripId) => {
+                const trip = trips.find(t => t.id === tripId);
+                if (!trip) return;
+
+                setTrips(prev => prev.filter(t => t.id !== tripId));
+                setAvailableMiles(prev => prev + trip.miles);
+                logActivity('Deleted Trip', trip.miles, trip.description);
+            };
+
+            const resetBalance = () => {
+                const previousBalance = availableMiles;
+                setAvailableMiles(0);
+                setTrips([]);
+                logActivity('Reset Balance', previousBalance, `Reset balance from ${previousBalance.toFixed(1)} to 0.0`);
+                setShowResetAlert(false);
+            };
+
+            const handleQuickLog = () => {
+                const miles = parseFloat(quickMiles);
+                if (miles > 0 && quickDescription.trim()) {
+                    addTrip(miles, quickDescription.trim());
+                    setQuickMiles('');
+                    setQuickDescription('');
+                }
+            };
+
+            const exportCSV = () => {
+                let csv = 'Date,Time,Activity Type,Miles,Description,Balance After\n';
+                
+                [...activityLog].reverse().forEach(entry => {
+                    const date = new Date(entry.date);
+                    const dateStr = date.toLocaleDateString();
+                    const timeStr = date.toLocaleTimeString();
+                    const desc = entry.description.replace(/,/g, ';');
+                    csv += `"${dateStr}","${timeStr}","${entry.type}",${entry.miles.toFixed(1)},"${desc}",${entry.balanceAfter.toFixed(1)}\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const filename = `MileageLog_${new Date().toISOString().split('T')[0]}.csv`;
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+                setShowExport(false);
+            };
+
+            const formatDate = (dateStr) => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            };
+
+            return (
+                <div className="app">
+                    <div className="header">
+                        <h1>Mileage Tracker</h1>
+                        <button className="menu-btn" onClick={() => setShowMenu(true)}>☰</button>
+                    </div>
+
+                    <div className="balance-section">
+                        <div className="balance-label">Available Miles</div>
+                        <div className={`balance-amount ${availableMiles >= 0 ? 'balance-positive' : 'balance-negative'}`}>
+                            {availableMiles.toFixed(1)}
+                        </div>
+                        {availableMiles < 0 && (
+                            <div className="owe-text">
+                                You owe: {Math.abs(availableMiles).toFixed(1)} miles
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="quick-log">
+                        <h2>Quick Log Trip</h2>
+                        <div className="input-row">
+                            <input 
+                                type="text"
+                                placeholder="Description"
+                                value={quickDescription}
+                                onChange={(e) => setQuickDescription(e.target.value)}
+                            />
+                            <input 
+                                type="number"
+                                placeholder="Miles"
+                                value={quickMiles}
+                                onChange={(e) => setQuickMiles(e.target.value)}
+                                style={{ width: '100px' }}
+                                step="0.1"
+                            />
+                        </div>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={handleQuickLog}
+                            disabled={!quickMiles || !quickDescription.trim() || parseFloat(quickMiles) <= 0}
+                        >
+                            Log Trip
+                        </button>
+                    </div>
+
+                    <div className="trip-list">
+                        {trips.length === 0 ? (
+                            <div className="empty-state">
+                                No trips logged yet
+                            </div>
+                        ) : (
+                            trips.map(trip => (
+                                <div 
+                                    key={trip.id} 
+                                    className="trip-item"
+                                    onClick={() => {
+                                        setEditingTrip(trip);
+                                        setShowEditTrip(true);
+                                    }}
+                                >
+                                    <div className="trip-header">
+                                        <div className="trip-description">{trip.description}</div>
+                                        <div className="trip-miles">{trip.miles.toFixed(1)} mi</div>
+                                    </div>
+                                    <div className="trip-date">{formatDate(trip.date)}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Menu */}
+                    {showMenu && <div className="modal-overlay" onClick={() => setShowMenu(false)} />}
+                    <div className={`menu ${showMenu ? 'open' : ''}`}>
+                        <div className="menu-header">Menu</div>
+                        <div className="menu-item" onClick={() => { setShowAddMiles(true); setShowMenu(false); }}>
+                            <span>➕</span> Add Miles
+                        </div>
+                        <div className="menu-item" onClick={() => { setShowExport(true); setShowMenu(false); }}>
+                            <span>📤</span> Export Log
+                        </div>
+                        <div className="menu-item danger" onClick={() => { setShowResetAlert(true); setShowMenu(false); }}>
+                            <span>🔄</span> Reset Balance to Zero
+                        </div>
+                    </div>
+
+                    {/* Add Miles Modal */}
+                    {showAddMiles && <AddMilesModal 
+                        onClose={() => setShowAddMiles(false)}
+                        onAdd={addMiles}
+                    />}
+
+                    {/* Edit Trip Modal */}
+                    {showEditTrip && editingTrip && <EditTripModal 
+                        trip={editingTrip}
+                        onClose={() => { setShowEditTrip(false); setEditingTrip(null); }}
+                        onUpdate={updateTrip}
+                        onDelete={deleteTrip}
+                    />}
+
+                    {/* Reset Alert */}
+                    {showResetAlert && <ResetAlert 
+                        onCancel={() => setShowResetAlert(false)}
+                        onConfirm={resetBalance}
+                    />}
+
+                    {/* Export Modal */}
+                    {showExport && <ExportModal 
+                        count={activityLog.length}
+                        onClose={() => setShowExport(false)}
+                        onExport={exportCSV}
+                    />}
+                </div>
+            );
+        }
+
+        function AddMilesModal({ onClose, onAdd }) {
+            const [miles, setMiles] = useState('');
+
+            const handleAdd = () => {
+                const milesNum = parseFloat(miles);
+                if (milesNum > 0) {
+                    onAdd(milesNum);
+                    onClose();
+                }
+            };
+
+            return (
+                <>
+                    <div className="modal-overlay" onClick={onClose} />
+                    <div className="modal" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <div className="modal-header">
+                            <div className="modal-title">Add Miles</div>
+                            <button className="menu-btn" onClick={onClose}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Add Personal Miles</label>
+                                <input 
+                                    type="number"
+                                    placeholder="Miles"
+                                    value={miles}
+                                    onChange={(e) => setMiles(e.target.value)}
+                                    step="0.1"
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={handleAdd}
+                                disabled={!miles || parseFloat(miles) <= 0}
+                                style={{ flex: 1 }}
+                            >
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function EditTripModal({ trip, onClose, onUpdate, onDelete }) {
+            const [miles, setMiles] = useState(trip.miles.toString());
+            const [description, setDescription] = useState(trip.description);
+            const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
+            const handleSave = () => {
+                const milesNum = parseFloat(miles);
+                if (milesNum > 0 && description.trim()) {
+                    onUpdate(trip.id, milesNum, description.trim());
+                    onClose();
+                }
+            };
+
+            const handleDelete = () => {
+                onDelete(trip.id);
+                onClose();
+            };
+
+            return (
+                <>
+                    <div className="modal-overlay" onClick={onClose} />
+                    <div className="modal" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <div className="modal-header">
+                            <div className="modal-title">Edit Trip</div>
+                            <button className="menu-btn" onClick={onClose}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Description</label>
+                                <input 
+                                    type="text"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Miles</label>
+                                <input 
+                                    type="number"
+                                    value={miles}
+                                    onChange={(e) => setMiles(e.target.value)}
+                                    step="0.1"
+                                />
+                            </div>
+                            <button 
+                                className="btn btn-danger"
+                                onClick={() => setShowDeleteAlert(true)}
+                            >
+                                Delete Trip
+                            </button>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={handleSave}
+                                disabled={!miles || !description.trim() || parseFloat(miles) <= 0}
+                                style={{ flex: 1 }}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+
+                    {showDeleteAlert && (
+                        <div className="alert">
+                            <div className="alert-title">Delete Trip</div>
+                            <div className="alert-message">
+                                Are you sure you want to delete this trip? The miles will be added back to your balance.
+                            </div>
+                            <div className="alert-buttons">
+                                <button className="btn btn-secondary" onClick={() => setShowDeleteAlert(false)} style={{ flex: 1 }}>
+                                    Cancel
+                                </button>
+                                <button className="btn btn-danger" onClick={handleDelete} style={{ flex: 1 }}>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function ResetAlert({ onCancel, onConfirm }) {
+            return (
+                <>
+                    <div className="modal-overlay" onClick={onCancel} />
+                    <div className="alert">
+                        <div className="alert-title">Reset Balance</div>
+                        <div className="alert-message">
+                            Are you sure you want to reset your miles balance to zero? Your trip history will be cleared, but the activity log will be preserved.
+                        </div>
+                        <div className="alert-buttons">
+                            <button className="btn btn-secondary" onClick={onCancel} style={{ flex: 1 }}>
+                                Cancel
+                            </button>
+                            <button className="btn btn-danger" onClick={onConfirm} style={{ flex: 1 }}>
+                                Reset to Zero
+                            </button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        function ExportModal({ count, onClose, onExport }) {
+            return (
+                <>
+                    <div className="modal-overlay" onClick={onClose} />
+                    <div className="modal" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <div className="modal-header">
+                            <div className="modal-title">Export Log</div>
+                            <button className="menu-btn" onClick={onClose}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="export-view">
+                                <div className="export-icon">📄</div>
+                                <div className="export-title">Export Activity Log</div>
+                                <div className="export-count">{count} entries</div>
+                                
+                                <div style={{ borderTop: '1px solid #e0e0e0', margin: '24px 0', paddingTop: '24px' }}>
+                                    <div className="export-features">
+                                        <div className="export-feature">
+                                            <span>📊</span> CSV format
+                                        </div>
+                                        <div className="export-feature">
+                                            <span>✅</span> Ready to open in Excel or Numbers
+                                        </div>
+                                        <div className="export-feature">
+                                            <span>📁</span> Downloads to your device
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button className="btn btn-primary" onClick={onExport}>
+                                    📤 Export & Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>
